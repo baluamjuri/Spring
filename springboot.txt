@@ -1,0 +1,35 @@
+Spring Boot is to simplify the process for configuring and deploying the spring applications.
+Spring boot comes with embedded tomcat server.
+Just you need to run the main class file, internally it prepares jar file, starts the tomcat server, deploys the application
+spring boot gives war file also. so that you can deploy in your own server.
+
+Spring MVC annotation based:
+------------------------------------------
+http://websystique.com/springmvc/spring-4-mvc-helloworld-tutorial-annotation-javaconfig-full-example/
+web.xml -> write a class that extends WebApplicationInitializer or AbstractAnnotationConfigDispatcherServletInitializer 
+dispatcherservlet.xml -> write a class that annotates with @Configuration, @EnableWebMvc, @ComponentScan
+
+Spring boot :
+------------------------------------------
+Spring Boot Starter Web auto-configures
+--Dispatcher Servlet - no web.xml needed
+--Error Page 
+--Web Jars to manage your static dependencies
+--Embedded Servlet Container - Tomcat is the default
+
+For spring boot, Just a class that annotate with @SpringBootApplication with main method.
+
+https://www.mkyong.com/spring-boot/spring-boot-hello-world-example-jsp/
+
+How to prepare war file using spring boot:
+------------------------------------------
+https://www.mkyong.com/spring-boot/spring-boot-deploy-war-file-to-tomcat/
+For Spring Boot WAR deployment, you need to do three steps:
+
+1) Extends SpringBootServletInitializer
+2) Marked the embedded servlet container as provided.
+3) Update packaging to war
+and next
+	-> Run as Maven clean install
+	-> Check the war in target folder
+

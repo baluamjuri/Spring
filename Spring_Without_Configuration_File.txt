@@ -1,0 +1,93 @@
+
+@EnableWebMvc is equivalent to mvc:annotation-driven in XML
+===============================================================
+@EnableWebMvc //mvc:annotation-driven
+@Configuration
+@ComponentScan({ "com.mkyong.web" })
+public class SpringWebConfig extends WebMvcConfigurerAdapter {
+
+	@Override
+	public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
+	}
+
+	@Bean
+	public InternalResourceViewResolver viewResolver() {
+		InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+		viewResolver.setViewClass(JstlView.class);
+		viewResolver.setPrefix("/WEB-INF/views/jsp/");
+		viewResolver.setSuffix(".jsp");
+		return viewResolver;
+	}
+
+}
+
+================================================================
+
+<context:component-scan base-package="com.mkyong.web" />
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix">
+			<value>/WEB-INF/views/jsp/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<mvc:annotation-driven />
+
+</beans>
+
+=================================================================
+
+WebApplicationInitializer (Instead of web.xml)
+
+public class AppInitializer implements WebApplicationInitializer {
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        WebApplicationContext context = getContext();
+        servletContext.addListener(new ContextLoaderListener(context));
+        ServletRegistration.Dynamic dispatcher = servletContext.addServlet("DispatcherServlet", new DispatcherServlet(context));
+        dispatcher.setLoadOnStartup(1);
+        dispatcher.addMapping("/*");
+    }
+
+    private AnnotationConfigWebApplicationContext getContext() {
+        AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
+        context.setConfigLocation("eu.kielczewski.example.config");
+        return context;
+    }
+
+}
+
+(or)
+
+
+public class MyWebInitializer extends
+		AbstractAnnotationConfigDispatcherServletInitializer {
+
+	@Override
+	protected Class<?>[] getServletConfigClasses() {
+		return new Class[] { SpringWebConfig.class };
+	}
+
+	@Override
+	protected String[] getServletMappings() {
+		return new String[] { "/" };
+	}
+
+	@Override
+	protected Class<?>[] getRootConfigClasses() {
+		return null;
+	}
+
+}
+=======================================================================
+
+@SpringBootApplication(scanBasePackages={"com.websystique.springboot"})
+// same as @Configuration @EnableAutoConfiguration @ComponentScan

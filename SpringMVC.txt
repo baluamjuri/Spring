@@ -1,0 +1,69 @@
+Spring MVC:
+===========
+DispatcherServlet
+contextConfigLocation
+ContextLoaderListener
+@Controller
+@RequestMapping(value, method, produces, consumes)
+@RequestMapping(value="/tasks",method = RequestMethod.GET,headers="Accept=application/json")
+@PostMapping, @GetMapping, @PutMapping, #DeleteMapping(introduced from 4.3)
+difference between @RequestMapping and @PostMapping and other
+ModelAndView
+Model
+InternalResourceViewResolver(prefix, suffix)
+@PathVariable
+@RequestParam
+@ModelAttribute (On method params, on a method)
+BindingResult(hasErrors())
+@InitBinder
+WebDataBinder(setDisallowedFields(), registerCustomEditor())
+builtin propertyeditors(CustomDateEditor)
+PropertyEditorSupport(Custom Editors)
+return "redirect:/uploadStatus";
+
+Form Validations:
+----------------
+@Size, @NotNull, @NotEmpty, @Future, @Past, @Pattern (hibernate validator framework)
+@Valid
+<form:error/>
+ReloadableResourceBundleMessageSource(basename, cacheSeconds)
+ConstraintValidator
+@Constraint(ValidatedBy=)
+
+Interceptors
+LocaleResolver
+ThemeResolver
+Spring tiles
+
+ExceptionHandling
+------------------
+@ExceptionHandler
+@ControllerAdvice
+
+Spring 4.1 --> @JsonView (Profile concept)
+
+Uploading File:
+---------------
+MultipartFile
+enctype="multipart/form-data"
+
+
+RedirectAttributes
+addAttribute
+addFlashAttribute
+POST/Redirect/GET PRG pattern(To avoid double form submission)
+POST/Redirect/GET vs POST/Forward/GET
+
+@RequestHeader( Ex: public String hello(@RequestHeader(value="User-Agent", defaultValue="foo") String userAgent))
+@CookieValue( Ex: public String hello(@CookieValue(value = "foo", defaultValue = "hello") String fooCookie) )
+
+REST
+-------
+@RestController
+@RequestBody 
+@ResponseBody
+ResponseEntity 
+@JsonProperty
+@JsonPropertyOrder
+@JsonIgnoreProperties
+@JsonInclude(JsonInclude.Include.NotNull)
