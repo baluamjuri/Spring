@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:batch-app
+    platform: h2
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        use_sql_comments: false
+        format_sql: true
