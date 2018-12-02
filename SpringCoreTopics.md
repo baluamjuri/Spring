@@ -16,6 +16,7 @@
 ### Read from properties
 * @PropertySource(value="",ignoreResourceNotFound=true, classpath:,Ignoring exceptions, ignoreUnresolvablePlaceholders) 
 * Environment
+* MessageSource, MessageSourceAware
 * Spring Boot @ConfiguarationProperties, with prefix
  	https://www.mkyong.com/spring-boot/spring-boot-configurationproperties-example/
 * @Value
@@ -92,7 +93,6 @@ Follows the below order:
 * https://www.tutorialspoint.com/spring/spring_java_based_configuration.htm
 
 ### @Lookup
-### Controlling the Order of Creation of Beans - depends-on attribute
 ### @Required
 ### @ComponentScan
 ### Profiles
