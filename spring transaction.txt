@@ -1,0 +1,101 @@
+Spring transaction propagation :-
+===============================
++-------+---------------------------+------------------------------------------------------------------------------------------------------+
+| value |        Propagation        |                                             Description                                              |
++-------+---------------------------+------------------------------------------------------------------------------------------------------+
+|     0 | PROPAGATION_REQUIRED      | Support a current transaction; create a new one if none exists.                                      |
+|     1 | PROPAGATION_SUPPORTS      | Support a current transaction; execute non-transactionally if none exists.                           |
+|     2 | PROPAGATION_MANDATORY     | Support a current transaction; throw an exception if no current transaction exists.                  |
+|     3 | PROPAGATION_REQUIRES_NEW  | Create a new transaction, suspending the current transaction if one exists.                          |
+|     4 | PROPAGATION_NOT_SUPPORTED | Do not support a current transaction; rather always execute non-transactionally.                     |
+|     5 | PROPAGATION_NEVER         | Do not support a current transaction; throw an exception if a current transaction exists.            |
+|     6 | PROPAGATION_NESTED        | Execute within a nested transaction if a current transaction exists.                                 |
++-------+---------------------------+------------------------------------------------------------------------------------------------------+
+
++---------------+----+-----------+
+| PROPAGATION   | M1 | M2        |
++---------------+----+-----------+
+| REQUIRED      | T1 | T1        |
+|               | X  | T2        |
++---------------+----+-----------+
+| REQUIRES_NEW  | T1 | T2        |
+|               | X  | T2        |
++---------------+----+-----------+
+| MANDATORY     | T1 | T1        |
+|               | X  | EXCEPTION |
++---------------+----+-----------+
+| NEVER         | T1 | EXCEPTION |
+|               | X  | X         |
++---------------+----+-----------+
+| NOT_SUPPORTED | T1 | X         |
+|               | X  | X         |
++---------------+----+-----------+
+| SUPPORTS      | T1 | T1        |
+|               | X  | X         |
++---------------+----+-----------+
+
+
+
+ACID properties:
+-----------------------
+Atomic: all or nothing
+Consistency: the committed changes should maintain all constraints
+Isolation: No transaction can interfere in the end result of another transaction
+Durability: If any event of errors or power failures happen while transaction then there is a way to rollback the changes
+
+http://www.byteslounge.com/tutorials/spring-transaction-isolation-tutorial
+
+Transaction Anamolies:
+----------------------
+https://www.youtube.com/watch?v=CTCAo89fcQw
+
+1)Dirty Read
+2)Non-repeatable read
+3)Phantom read
+
+Dirty Read:
+-----------
+Transaction A: update product set price = 500 where productId=123;
+Transaction B: select * from product where productId = 123;
+A is rollback
+Now B is dirty 
+
+Non-repeatable read:
+--------------------
+Transaction A: select * from product where productId = 123;
+Transaction B: update product set price = 500 where productId=123;
+B is committed
+Transaction A: select * from product where productId = 123;
+
+Phantom read: 
+-------------
+Transaction A: select * from product where price<1000
+Transaction B  insert into product(id,price) values(123,2000)
+B is committed.
+Transaction A: select * from product where price<1000
+
+Solutions:(Transaction isolation levels)
+----------
+TRANSACTION_READ_UNCOMMITTED
+TRANSACTION_READ_COMMITTED (can avoid dirty reads)
+TRANSACTION_REPEATABLE_READ (can avaoid dirty read and non-repeatable read)
+TRANSACTION_SERIALIZABLE (Table level lock)
+
+
++---------------------------+-------------------+-------------+-------------+------------------------+
+| Isolation Level Mode      |  Read             |   Insert    |   Update    |       Lock Scope       |
++---------------------------+-------------------+-------------+-------------+------------------------+
+| READ_UNCOMMITTED          |  uncommitted data | Allowed     | Allowed     | No Lock                |
+| READ_COMMITTED (Default)  |   committed data  | Allowed     | Allowed     | Lock on Committed data |
+| REPEATABLE_READ           |   committed data  | Allowed     | Not Allowed | Lock on block of table |
+| SERIALIZABLE              |   committed data  | Not Allowed | Not Allowed | Lock on full table     |
++---------------------------+-------------------+-------------+-------------+------------------------+
+
++---------------------------+----------------+----------------------+----------------+
+| Isolation Level Mode      |  Dirty reads   | Non-repeatable reads | Phantoms reads |
++---------------------------+----------------+----------------------+----------------+
+| READ_UNCOMMITTED          | allows         | allows               | allows         |
+| READ_COMMITTED (Default)  | prevents       | allows               | allows         |
+| REPEATABLE_READ           | prevents       | prevents             | allows         |
+| SERIALIZABLE              | prevents       | prevents             | prevents       |
++---------------------------+----------------+----------------------+----------------+
