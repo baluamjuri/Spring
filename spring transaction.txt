@@ -35,6 +35,11 @@ Spring transaction propagation :-
 +---------------+----+-----------+
 
 
+@Transactional(timeout=60)
+==========================
+Defaults to the default timeout of the underlying transaction system.
+Informs the tx manager about the time duration to wait for an idle tx before a decision is taken to rollback non-responsive transactions.
+
 
 ACID properties:
 -----------------------
@@ -99,3 +104,7 @@ TRANSACTION_SERIALIZABLE (Table level lock)
 | REPEATABLE_READ           | prevents       | prevents             | allows         |
 | SERIALIZABLE              | prevents       | prevents             | prevents       |
 +---------------------------+----------------+----------------------+----------------+
+
+Reference:
+==========
+https://stackoverflow.com/questions/8490852/spring-transactional-isolation-propagation
