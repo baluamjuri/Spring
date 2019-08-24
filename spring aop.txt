@@ -1,0 +1,67 @@
+Joinpoint is a point of execution of the program, such as the execution of a method or the handling of an exception. In Spring AOP, a joinpoint always represents a method execution.
+
+Pointcut is a predicate or expression that matches join points.
+
+Advice is associated with a pointcut expression and runs at any join point matched by the pointcut.
+
+Types of AOP advices:
+=====================
+1. @Before
+2. @After
+3. @Around
+4. @AfterReturning
+5. @AfterThrowing
+
+Supported Pointcut Designators by Spring AOP :-
+--------------------------------------------
+* execution – pointcut expression for matching method execution join points.
+* within – pointcut expression for matching to join points within certain types
+* this – pointcut expression for matching to join points where the bean reference is an instance of the given type
+* target – pointcut expression for matching to join points where the target object is an instance of the given type
+* args – pointcut expression for matching to join points where the arguments are instances of the given types
+* @target – pointcut expression for matching to join points where the class of the executing object has an annotation of the given type
+* @args – pointcut expression for matching to join points where the runtime type of the actual arguments passed have annotations of the given type
+* @within – pointcut expression for matching to join points within types that have the given annotation
+* @annotation – pointcut expression for matching to join points where the subject of the join point has the given annotation
+
+1. Matching Method Signature Patterns
+--------------------------------------
+Matching all public methods in TransferService
+@Pointcut("execution(public * com.doj.app.service.TransferService.*(..))")
+
+Matching any public methods
+@Pointcut("execution(public * *(..))")
+
+Matching any method defined in the service package
+@Pointcut("execution(* com.doj.app.service.*.*(..))")
+
+Matching any method defined in the service package or it’s sub-packages
+@Pointcut("execution(* com.doj.app.service..*.*(..))")
+
+Matching all public methods in TransferService with return type Account
+@Pointcut("execution(public Account com.doj.app.service.TransferService.*(..))")
+
+Matching all methods in TransferService with return type void and first parameter as Account
+@Pointcut("execution(void com.doj.app.service.TransferService.*(Account account, ..))")
+
+Matching all public methods in any class of the service package with any return type and method name should be transfer with taking two parameters of Account types
+@Pointcut("execution(public * com.doj.app.service.*.tranfer(Account account1, Account account2))")
+
+2. Matching Type Signature Patterns
+-----------------------------------
+Matching all methods defined in classes inside package com.doj.app.service
+@Pointcut("within(com.doj.app.service.*)")
+
+Matching all methods defined in classes inside package com.doj.app.service and it’s sub-packages sub-packages use two dots.
+@Pointcut("within(com.doj.app.service..*)")
+
+Matching all methods with a TransferService class
+@Pointcut("within(com.doj.app.service.TransferService)")
+
+Matching all methods within all implementing classes of TransferService interface
+@Pointcut("within(com.doj.app.service.TransferService+)")
+
+Reference:
+----------
+https://howtodoinjava.com/spring-aop-tutorial/
+https://www.dineshonjava.com/pointcuts-and-wildcard-expressions/
