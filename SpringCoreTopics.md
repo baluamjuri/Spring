@@ -7,10 +7,11 @@
 * setter injection
 * constructor injection
 * field injection
-* @Autowire(required=true/false)
+* @Autowire(required=true/false)(=@Inject)
 * By Type
-* @Qualifier(By name)
-* @Resource(autowire+qualifier)
+* @Qualifier(=@Named)(By name)
+* @Resource(Autowire+Qualifier)(Inject+Named)
+* @Inject, @Named, @Resource are J2EE annotations
 
   
 ### Read from properties
@@ -93,6 +94,8 @@ Follows the below order:
 * https://www.tutorialspoint.com/spring/spring_java_based_configuration.htm
 
 ### @Lookup
+* Injecting a prototype-scoped bean into a singleton bean (similar to Provider)
+* Injecting dependencies procedurally
 ### @Required
 ### @ComponentScan
 ### Profiles
