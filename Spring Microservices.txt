@@ -1,0 +1,10 @@
+Eureka - service Registry
+Zuul - API gateway (Reverse Proxy)
+Spring cloud Config - Centralized configuration, linked with Git
+Hystrix, Turbine - Circuit breaker, Dashboards
+ELK - Logging, (Logstash as database, Elastic Search as search engine, Kebana as UI)
+OAUTH2 - Authentication using Tokenization
+Zipkin, sleuth
+Kafka - Message Broker (For internal communication between services)
+Docker - containeraization
+Kubernates - Autoscaling, Maintainance and monitoring of servers
