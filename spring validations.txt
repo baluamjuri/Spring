@@ -1,0 +1,170 @@
+1) @Valid vs @Validated 
+---------------------
+@Valid comes from Java Validation API
+@Validated comes from Spring Framework Validation, it is a variant of @Valid with support for validation groups
+@Valid use on method parameters and fields, don’t forget to use it on complex objects if they need to be validated
+@Validated use on methods and method parameters when using validation groups, use on classes to support method parameter constraint validations
+
+https://medium.com/javarevisited/are-you-using-valid-and-validated-annotations-wrong-b4a35ac1bca4
+
+2) methodargumentnotvalidexception vs constraintviolationexception
+@Valid throws methodargumentnotvalidexception with 400 error by default
+@Validated throws constraintviolationexception with 500 error by default
+
+3) Validation groups and sequences
+
+4) context.buildConstraintViolationWithTemplate("Event type is blank").addConstraintViolation();
+
+public class EventInfoMessageValidator implements ConstraintValidator<ValidEventMessage, EventInfoMessage> {
+	@Override
+	public boolean isValid(EventInfoMessage eventInfoMessage, ConstraintValidatorContext context) {
+        boolean isValid = true;
+        context.disableDefaultConstraintViolation();
+        if (StringUtils.isBlank(eventInfoMessage.getEventType())) {
+            context.buildConstraintViolationWithTemplate("Event type is blank").addConstraintViolation();
+            isValid = false;
+        }
+
+        if (eventInfoMessage.getLotAttributes() == null && eventInfoMessage.getEntity().equalsIgnoreCase("lot")) {
+            context.buildConstraintViolationWithTemplate("There are no lot attributes").addConstraintViolation();
+            isValid = false;
+        }
+        else {
+            if (eventInfoMessage.getLotAttributes() != null) {
+                if (StringUtils.isBlank(eventInfoMessage.getLotAttributes().getSellerNumber())) {
+                    context.buildConstraintViolationWithTemplate("Seller code is blank").addConstraintViolation();
+                    isValid = false;
+                }
+
+                if (eventInfoMessage.getLotAttributes().getLotNumber() == null &&
+                        eventInfoMessage.getEntity().equalsIgnoreCase("lot")) {
+                    context.buildConstraintViolationWithTemplate("Lot number is null").addConstraintViolation();
+                    isValid = false;
+                }
+            }
+        }
+		
+		if(StringUtils.isBlank(eventInfoMessage.getCountry())) {			
+			context.buildConstraintViolationWithTemplate("Country is blank").addConstraintViolation();
+			isValid = false;
+		}
+		
+		if(StringUtils.isBlank(eventInfoMessage.getCorrelationId())) {			
+			context.buildConstraintViolationWithTemplate("Correlation ID is blank").addConstraintViolation();
+			isValid = false;
+		}
+		
+		log.info("EventInfoMessage is valid: {}", isValid);
+		return isValid;
+	}
+
+}
+
+5) Handling exception advices
+
+@RestControllerAdvice
+@ConditionalOnProperty("common.controller-advice.enable")
+@Log4j2
+public class CommonControllerAdvice {
+
+	/**
+	 * Handles bean validation errors
+	 * 
+	 * @param ex - To get the bean validation errors
+	 * @return list of {@link BeanValidationErrorResponseDTO}s
+	 */
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+	public List<BeanValidationErrorResponseDTO> handle(MethodArgumentNotValidException  ex){
+		log.error(ex);
+		List<BeanValidationErrorResponseDTO> errrorDetailsList = ValidationErrorTransformer.getAllErrorDetails(ex.getBindingResult());
+		return errrorDetailsList;
+	}
+	
+	/**
+	 * Handles parameter constraint violations
+	 * @param request
+	 *            - to get the servlet path
+	 * @param ex
+	 *            - to get the constraint violations for request parameters, path
+	 *            variables etc.
+	 * @return {@link ParameterConstraintViolationResponseDTO}
+	 */
+	@ExceptionHandler(ConstraintViolationException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public ParameterConstraintViolationResponseDTO handle(HttpServletRequest request, ConstraintViolationException ex){
+		log.error(ex);
+		Map<Object, String> violationMap =				
+				ex.getConstraintViolations()
+				.stream()
+				.collect(Collectors.toMap(constraintViolation->this.getInvalidValue(constraintViolation), ConstraintViolation::getMessage));
+		
+		
+		ParameterConstraintViolationResponseDTO parameterConstraintViolationResponseDTO = 
+				ParameterConstraintViolationResponseDTO.builder()
+				.violationMap(violationMap)
+				.path(request.getServletPath())
+				.build();
+		
+		return parameterConstraintViolationResponseDTO;
+	}
+	
+	/**
+	 * If it is a cross-parameter constraint then returns a string else returns
+	 * parameter value
+	 * 
+	 * @param constraintViolation
+	 * @return returns a string if cross-parameter constraint encountered else
+	 *         normal parameter value
+	 */
+	private <T> Object getInvalidValue(ConstraintViolation<T> constraintViolation) {
+		Object invalidValue = constraintViolation.getInvalidValue();
+		if(invalidValue instanceof Object[])
+			return CommonValidationConstants.CROSS_PARAMETERS_ERROR_KEY;
+		return invalidValue;
+	}
+}
+------------
+@Setter
+@Getter
+public class BeanValidationErrorResponseDTO {
+	private String errorMessage;
+	private String objectName;
+	private String field;
+	private Object rejectedValue;
+	private String code;
+	
+	public BeanValidationErrorResponseDTO(FieldError fieldError){
+		this.errorMessage = fieldError.getDefaultMessage();
+		this.objectName = fieldError.getObjectName();
+		this.field = fieldError.getField();
+		this.rejectedValue = fieldError.getRejectedValue();
+		this.code = fieldError.getCode();
+	}
+}
+--------------
+@Getter
+@Setter
+@Builder
+public class ParameterConstraintViolationResponseDTO {
+	private String path;
+	
+	//Key is path variable or request parameter's value and value is message
+	private Map<Object, String> violationMap; 	
+}
+-------------
+public class ValidationErrorTransformer {
+	
+	/**
+	 * Converts the {@link BindingResult} to list of {@link BeanValidationErrorResponseDTO}s
+	 * @param result
+	 * @return list of {@link BeanValidationErrorResponseDTO}s
+	 */
+	public static List<BeanValidationErrorResponseDTO> getAllErrorDetails(BindingResult result){
+		return result.getFieldErrors()
+					.stream()
+					.map(error -> new BeanValidationErrorResponseDTO(error))
+					.collect(Collectors.toList());	
+	}
+}
+
