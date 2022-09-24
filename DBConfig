@@ -1,0 +1,61 @@
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+@Configuration
+@EnableTransactionManagement
+@EnableJpaRepositories(entityManagerFactoryRef = "mariaEntityManagerFactory", transactionManagerRef = "mariaTransactionManager", basePackages = {
+		"com.amjuri.b2b.eventpublisher.repository.maria" })
+public class MariaDbConfig {
+	
+	@Bean(name = "mariaDataSource")
+	@ConfigurationProperties(prefix = "spring.maria.datasource")
+	public DataSource dataSource() {
+		return DataSourceBuilder.create().build();
+	}
+    	
+	@Bean
+	@ConfigurationProperties(prefix = "spring.jpa")
+	public JpaProperties jpaProperties() {
+		return new JpaProperties();
+	}
+
+	@Bean(name = "mariaEntityManagerFactory")
+	public LocalContainerEntityManagerFactoryBean mariaEntityManagerFactory(EntityManagerFactoryBuilder builder,
+			@Qualifier("mariaDataSource") DataSource dataSource) {
+		Map<String, String> properties = new HashMap<>(jpaProperties().getProperties());
+		return builder.dataSource(dataSource)
+				.properties(properties)
+				.packages("com.amjuri.b2b.eventpublisher.entity.maria")
+				.persistenceUnit("maria")
+				.build();
+	}
+
+	@Bean(name = "mariaTransactionManager")
+	public PlatformTransactionManager mariaTransactionManager(
+			@Qualifier("mariaEntityManagerFactory") EntityManagerFactory mariaEntityManagerFactory) {
+		return new JpaTransactionManager(mariaEntityManagerFactory);
+	}
+
+	@Bean(name = "namedParameterJdbcTemplate")
+	public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("mariaDataSource") DataSource dataSource) {
+		return new NamedParameterJdbcTemplate(dataSource);
+	}
+}
