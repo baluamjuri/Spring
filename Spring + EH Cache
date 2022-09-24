@@ -1,4 +1,4 @@
-package com.amjuri.b2b.eventpublisher.config;
+package com.amjuri.config;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -98,3 +98,40 @@ public static class CacheProperties{
 	//Events logged by listening
 	private Set<EventType> eventsToListen;
 }
+
+==========================
+
+@GetMapping("clearAll")
+public ResponseEntity<Void> clearAllCaches() {
+	log.info("Refreshing/Clearing the cache");
+	cacheService.evictAllCaches();
+	return ResponseEntity.ok().build();
+}
+
+==========================
+
+package com.amjuri.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.stereotype.Service;
+......
+
+@Service
+public class CacheServiceImpl implements CacheService{
+
+    @Autowired
+    private CacheManager cacheManager;
+
+    @Override
+    public void evictAllCaches() {
+        cacheManager.getCacheNames().stream()
+          .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
+    }
+    
+    @Override
+    public void evictAllCacheValues(String cacheName) {
+        cacheManager.getCache(cacheName).clear();
+    }
+}
+
