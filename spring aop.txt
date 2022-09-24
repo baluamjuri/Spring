@@ -47,6 +47,9 @@ Matching all methods in TransferService with return type void and first paramete
 Matching all public methods in any class of the service package with any return type and method name should be transfer with taking two parameters of Account types
 @Pointcut("execution(public * com.doj.app.service.*.tranfer(Account account1, Account account2))")
 
+Matching all map(ConsumerRecord, EventInfoMessage) methods of EventsInfoMapper subclasses
+@Around(value = "execution(* com.amjuri.b2b.eventpublisher.converter.EventsInfoMapper+.map(org.apache.kafka.clients.consumer.ConsumerRecord<String, com.amjuri.b2b.event.processor.vo.EventInfoMessage>))")
+
 2. Matching Type Signature Patterns
 -----------------------------------
 Matching all methods defined in classes inside package com.doj.app.service
