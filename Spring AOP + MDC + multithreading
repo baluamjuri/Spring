@@ -1,0 +1,52 @@
+Spring AOP + MDC + multithreading
+==================================
+
+'%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%level)---[correlationId=%X{correlationId}][eventId=%X{eventId}] %clr(%logger{36}){cyan} : %msg%n'
+
+Multithreading
+===============
+1. Wrap around Runnable/Callable/Supplier
+
+	public static <U> Supplier<U> mdcSupplier(Supplier<U> supplier) {
+        Map<String, Object> contextMap = MDC.getMap();
+        return (Supplier<U>) () -> {
+            try {
+                contextMap.forEach((k,v) -> MDC.put(k,v));
+                return supplier.get();
+            } catch (Exception exception) {
+                throw exception;
+            } finally {
+                MDC.clear();
+            }
+        };
+    }
+	
+	CompletableFuture
+	.supplyAsync(
+			ActionUtils.mdcSupplier(
+					() -> {
+							......
+						}))
+
+2. Use TaskDecorator in case of ThreadPoolTaskExecutor
+
+threadPoolTaskExecutor.setTaskDecorator(ActionUtils.getMDCAwareTaskDecorator());
+
+	public static TaskDecorator getMDCAwareTaskDecorator() {
+        return new TaskDecorator() {
+            @Override
+            public Runnable decorate(Runnable runnable) {
+                Map<String, Object> contextMap = MDC.getMap();
+                return () -> {
+                    try {
+                        contextMap.forEach((k,v) -> MDC.put(k,v));
+                        runnable.run();
+                    } catch (Exception exception) {
+                        throw exception;
+                    } finally {
+                        MDC.clear();
+                    }
+                };
+            }
+        };
+    }
