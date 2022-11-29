@@ -1,0 +1,12 @@
+Ways to Improve JPA Performance
+=================================
+Eager fetching
+Lazy fetching
+Pagination - q.setMaxResults(5), q.setFirstResult(0)
+Smart Column select
+Using DTO projections - 
+public interface AuthorRepository extends JpaRepository<Author, Long> {
+ 
+    List<AuthorValueIntf> findByFirstName(String firstName);
+ 
+}
