@@ -34,7 +34,9 @@
 * prototype
 * singleton
 * request
-* session)
+* session
+* application(5)
+* websocket
 
 ### @Lazy
 ### Stereotypes 
