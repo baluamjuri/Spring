@@ -25,8 +25,9 @@
   - from properties file, with default value
   - from system properties
   - list of values(to inject values to an array)
-  - using spEL
-  - Assign Null value as default value
+  - using spEL (@Value("#{'${roytuts.list}'.split(',')}"), private List<String> strList2;)
+  - accessing beans (@Value("#{someService.someMethod()}"))
+  - Assign Null value as default value (@Value("${stuff.value:@null}"))
  
 ### Scopes
 * @Scope
