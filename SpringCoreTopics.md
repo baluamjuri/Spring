@@ -36,7 +36,7 @@
 * request
 * session
 * application(5)
-* websocket
+* websocket(5)
 
 ### @Lazy
 ### Stereotypes 
