@@ -17,6 +17,10 @@ Implement dynamic filtering in REST - MappingJacksonValue, FilterProvider, Simpl
 Versioning-RESTful-Services---Basic-Approach-with-URIs
 Versioning-RESTful-Services---Header-and-Content-Negotiation-Approaches
 
+@SpringBootApplication(componentScan)
+@ConfiguarationProperties
+@CondionalOnProperty, @CondionalOnBean, @CondionalOnClass, @CondionalOnMissingProperty, @CondionalOnMissingBean, @CondionalOnMissingClass
+
 Form Validations:
 ----------------
 @Size, @NotNull, @NotEmpty, @Future, @Past, @Pattern (hibernate validator framework)
