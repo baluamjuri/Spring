@@ -1,0 +1,59 @@
+@RestController
+@RequestBody 
+@ResponseBody
+@RequestHeader( Ex: public String hello(@RequestHeader(value="User-Agent", defaultValue="foo") String userAgent))
+@CookieValue( Ex: public String hello(@CookieValue(value = "foo", defaultValue = "hello") String fooCookie) )
+ResponseEntity 
+@PathVariable
+@RequestParam
+
+@JsonProperty
+@JsonPropertyOrder
+@JsonIgnoreProperties
+@JsonInclude(JsonInclude.Include.NotNull)
+Spring REST - HATEOAS - Resource, ControllerLinkBuilder(linkTo, methodOn, etc)
+Implement static filtering in REST - @JsonIgnore
+Implement dynamic filtering in REST - MappingJacksonValue, FilterProvider, SimpleBeanPropertyFilter, @JsonFilter etc
+Versioning-RESTful-Services---Basic-Approach-with-URIs
+Versioning-RESTful-Services---Header-and-Content-Negotiation-Approaches
+
+Form Validations:
+----------------
+@Size, @NotNull, @NotEmpty, @Future, @Past, @Pattern (hibernate validator framework)
+@Valid
+MethodArgumentNotValidException
+@Validated
+ConstraintValidator
+@Constraint(ValidatedBy=)
+ConstraintViolationException
+
+ExceptionHandling
+------------------
+@ExceptionHandler
+@ControllerAdvice
+
+Uploading and downloading File:
+--------------------------------
+https://devwithus.com/download-upload-files-with-spring-boot/
+
+@PostMapping("/uploadfile")
+  public ResponseEntity<FileResponse> uploadSingleFile (@RequestParam("file") MultipartFile file) {
+      String upfile = fileSytemStorage.saveFile(file);//Files.copy(file.getInputStream(), destinationfilePath, StandardCopyOption.REPLACE_EXISTING);
+
+      String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
+              .path("/api/download/")
+              .path(upfile)
+              .toUriString();
+
+      return ResponseEntity.status(HttpStatus.OK).body(new FileResponse(upfile,fileDownloadUri,"File uploaded with success!"));
+  }
+  
+@GetMapping("/download/{filename:.+}")
+  public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
+
+      Resource resource = fileSytemStorage.loadFile(filename);
+
+      return ResponseEntity.ok()
+              .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+              .body(resource);
+  }
