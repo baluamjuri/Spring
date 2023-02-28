@@ -57,22 +57,4 @@ POST/Redirect/GET vs POST/Forward/GET
 @RequestHeader( Ex: public String hello(@RequestHeader(value="User-Agent", defaultValue="foo") String userAgent))
 @CookieValue( Ex: public String hello(@CookieValue(value = "foo", defaultValue = "hello") String fooCookie) )
 
-REST
--------
-@RestController
-@RequestBody 
-@ResponseBody
-ResponseEntity 
-@JsonProperty
-@JsonPropertyOrder
-@JsonIgnoreProperties
-@JsonInclude(JsonInclude.Include.NotNull)
-
-https://www.youtube.com/@letscode512/playlists - Master in Spring REST
-Spring REST - HATEOAS - Resource, ControllerLinkBuilder(linkTo, methodOn, etc)
-Implement static filtering in REST - @JsonIgnore
-Implement dynamic filtering in REST - MappingJacksonValue, FilterProvider, SimpleBeanPropertyFilter, @JsonFilter etc
-Versioning-RESTful-Services---Basic-Approach-with-URIs
-Versioning-RESTful-Services---Header-and-Content-Negotiation-Approaches
-Implementing-Basic-Authentication-with-Spring-Security-20180316
 Richardson-Maturity-Model
