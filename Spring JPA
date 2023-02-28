@@ -1,3 +1,43 @@
+Entity annotations
+HB associations, inheritance
+
+Query by method:
+====================
+https://docs.spring.io/spring-data/jpa/docs/1.5.0.RELEASE/reference/html/repositories.html#repositories.query-methods
+https://docs.spring.io/spring-data/jpa/docs/1.5.0.RELEASE/reference/html/jpa.repositories.html#jpa.sample-app.finders.strategies
+
+T findOne(ID primaryKey);
+Iterable<T> findAll();
+List<User> findByName(String name)
+  List<User> findByNameIs(String name);
+  List<User> findByNameEquals(String name);
+List<User> findByNameIsNot(String name);
+findByNameIsNull, findByNameIsNotNull
+findByLastnameIgnoreCase
+findByActiveTrue
+List<User> findByNameStartingWith(String prefix); List<User> findByNameEndingWith(String suffix); List<User> findByNameContaining(String infix);
+List<User> findByAgeLessThan(Integer age);List<User> findByAgeLessThanEqual(Integer age);List<User> findByAgeGreaterThan(Integer age); List<User> findByAgeGreaterThanEqual(Integer age); List<User> findByAgeBetween(Integer startAge, Integer endAge);
+List<User> findTop3ByAge()
+List<User> findByAgeIn(Collection<Integer> ages);
+List<User> findByBirthDateAfter(ZonedDateTime birthDate);List<User> findByBirthDateBefore(ZonedDateTime birthDate);
+List<User> findByNameOrBirthDateAndActive(String name, ZonedDateTime birthDate, Boolean active);
+List<User> findByNameOrderByNameAsc(String name);List<Person> findByLastnameOrderByFirstnameDesc(String lastname);
+findByFirstnameLike
+findDistinctPeopleByLastnameOrFirstname
+repository.existsById(id)
+List<Person> findByAddress_ZipCode(ZipCode zipCode);(when Address is a instance object of Person and zipcode is Address's property)
+Page<T> findAll(Pageable pageable);
+repository.findAll(new PageRequest(1, 20));
+
+Query by Example:
+=================
+=================
+@Query
+@Query(value="", nativeQuery= true)
+@Modifying
+@Query("update User u set u.firstname = ?1 where u.lastname = ?2")
+@Converter, AttributeConverter - Automatically converts db column value to your value
+
 Ways to Improve JPA Performance
 =================================
 Eager fetching
