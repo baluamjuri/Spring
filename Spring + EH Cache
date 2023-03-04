@@ -1,3 +1,27 @@
+
+https://www.baeldung.com/spring-cache-tutorial
+@EnableCaching
+@Cacheable("addresses") - 
+@Cacheable({"addresses", "directory"}) - 
+@CacheEvict(value="addresses", allEntries=true) - additional parameter allEntries in conjunction with the cache to be emptied; this will clear all the entries in the cache addresses and prepare it for new data
+@CachePut(value="addresses")
+The difference between @Cacheable and @CachePut is that @Cacheable will skip running the method, whereas @CachePut will actually run the method and then put its results in the cache.
+@Caching(evict = { 
+  @CacheEvict("addresses"), 
+  @CacheEvict(value="directory", key="#customer.name") })
+we can group multiple caching annotations with @Caching, and use it to implement our own customized caching logic.
+
+@CacheConfig(cacheNames={"addresses"})
+public class CustomerDataService {}
+
+@CachePut(value="addresses", condition="#customer.name=='Tom'")
+public String getAddress(Customer customer) {...}
+
+@CachePut(value="addresses", unless="#result.length()<64")
+public String getAddress(Customer customer) {...}
+
+https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/cache.html
+================================================================================================================================
 package com.amjuri.config;
 
 import java.lang.reflect.Method;
