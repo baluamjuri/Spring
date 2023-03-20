@@ -24,6 +24,78 @@ Supported Pointcut Designators by Spring AOP :-
 * @within – pointcut expression for matching to join points within types that have the given annotation
 * @annotation – pointcut expression for matching to join points where the subject of the join point has the given annotation
 
+============================================================================
+Matches exact method
+@Pointcut("execution(public String com.baeldung.pointcutadvice.dao.FooDao.findById(Long))")
+
+All the methods of the FooDao class, which may have different signatures, return types, and arguments.
+@Pointcut("execution(* com.baeldung.pointcutadvice.dao.FooDao.*(..))")
+@Pointcut("within(com.baeldung.pointcutadvice.dao.FooDao)")
+
+Within the com.baeldung package or a sub-package:
+@Pointcut("within(com.baeldung..*)")
+
+Match all methods within all all implementing classes of EmployeeManager interface 
+Use + (plus) sign to match all implementations of an interface.
+within(EmployeeManager+)
+
+Match with any join point (method) execution where the declared type of the target object (the class) has an @Transactional annotation.
+@within( org.springframework.transaction.annotation.Transactional )
+
+Any join point (method execution) that takes a single parameter and where the argument passed at runtime is Serializable
+args(java.io.Serializable)
+
+Any join point (method execution) which takes a single parameter, and where the runtime type of the argument passed has the @Classified annotation
+@args(com.jbd.security.Classified)
+Note that the pointcut given in this example is different to
+execution(* *(java.io.Serializable))
+
+*The args version matches if the argument passed at runtime is Serializable,
+the execution version matches if the method signature declares a single parameter of type Serializable.
+
+matches all classes that implements ICustomerService
+target(com.spring.aop.ICustomerService)
+
+
+Match with any join point (method execution) where the executing method has an @Transactional annotation.
+@annotation(org.springframework.transaction.annotation.Transactional)
+
+* The @annotation limits the matching of joinpoint where the method has the given annotation, whereas the @within matches if a class has the annotation.
+
+Any join point (method execution) on Spring beans having names that match the wildcard expression *Manager
+bean(*Manager)
+
+Any join point where the Spring bean name is accountRepository.
+bean(accountRepository)
+=====================================
+To match with the execution of any public method
+@Pointcut("execution(public * *(..))")
+private void anyPublicOperation() {} 
+
+Match with any joinpoint within trading and its sub-packages.
+@Pointcut("within(com.jsbd.trading..*)")
+private void inTrading() {} 
+
+Combining the above two
+@Pointcut("anyPublicOperation() && inTrading()")
+private void tradingOperation() {} 
+=====================================
+? – Means optional to specify, e.g. modifiers, throws_exception
+* – A star in the pattern represents a wildcard
+() – For parameter_pattern means no arguments
+(..) – For matching for parameter_pattern with zero or more arguments of any type
+(*) – pattern matches a method that takes one parameter of any type.
+(*, String) – matches a method that takes two parameters, first one is of any type and the second parameter of type string.
+===========================================
+@Aspect
+@Order(0)
+public class EmployeeCRUDTransactionAspect
+
+@Aspect
+@Order(1)
+public class EmployeeCRUDLoggingAspect 
+============================================================================
+Examples:
 1. Matching Method Signature Patterns
 --------------------------------------
 Matching all public methods in TransferService
