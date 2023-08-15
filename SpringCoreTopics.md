@@ -1,7 +1,9 @@
 ## Topics
 ### IOC
-* What is IOC? (Dependency lookup, Dependency injection)
-* Advantages of IOC pattern
+* What is IOC?
+  - Dependency lookup - Target class writes logic to search and get dependent class objects from different resources. Involves obtaining the required dependencies by querying a central service registry or container. (ctx.getBean(-,-))
+  - Dependency injection - Target class pulling and dependent class object from different places.(@Autowired)
+* Advantages of IOC pattern - Loose coupling
 
 ### Injection 
 * setter injection
