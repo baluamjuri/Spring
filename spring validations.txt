@@ -8,8 +8,6 @@
 https://medium.com/javarevisited/are-you-using-valid-and-validated-annotations-wrong-b4a35ac1bca4
 
 2) methodargumentnotvalidexception vs constraintviolationexception
-@Valid throws methodargumentnotvalidexception with 400 error by default
-@Validated throws constraintviolationexception with 500 error by default
 
 3) Validation groups and sequences
 
