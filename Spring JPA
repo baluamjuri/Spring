@@ -50,3 +50,28 @@ public interface AuthorRepository extends JpaRepository<Author, Long> {
     List<AuthorValueIntf> findByFirstName(String firstName);
  
 }
+
+Exception:
+HibernateException: The general superclass for all Hibernate-specific exceptions.
+
+NonUniqueResultException: Thrown when a query execution returns more than one result where only one result was expected.
+
+QueryException: Thrown when a query is syntactically incorrect or when there is a problem with the query execution.
+
+LazyInitializationException: Thrown when you attempt to access uninitialized lazy-loaded collections or associations outside the session scope.
+
+ObjectNotFoundException: Thrown when an object is not found in the database or is no longer available.
+
+PersistentObjectException: Thrown when there is a problem with persistent objects, such as re-associating a transient object with an already associated session.
+
+StaleStateException: As mentioned earlier, this exception is thrown in optimistic locking scenarios when an entity's version is outdated due to concurrent updates.
+
+TransientObjectException: Thrown when you try to save an object with a null identifier (primary key) or when you attempt to save an already persistent object as transient.
+
+PropertyValueException: Thrown when there is a problem with the properties of an entity, such as null or invalid values for required properties.
+
+ConstraintViolationException: This is a subclass of HibernateException and indicates that a constraint violation occurred when persisting or updating an entity, such as unique constraint violations.
+
+ObjectDeletedException: Thrown when you try to access a deleted object that is no longer available in the session.
+
+UnresolvableObjectException: Thrown when there is an attempt to resolve an unknown or unassociated object
