@@ -6,6 +6,7 @@
 ResponseEntity 
 @PathVariable
 @RequestParam
+@RequestParam(required = false, name = "tpc_nm") String topicName
 
 @JsonProperty
 @JsonPropertyOrder
