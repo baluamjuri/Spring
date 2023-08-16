@@ -99,8 +99,14 @@ Follows the below order:
 * https://www.tutorialspoint.com/spring/spring_java_based_configuration.htm
 
 ### @Lookup
-* Injecting a prototype-scoped bean into a singleton bean (similar to Provider)
+* Injecting a prototype-scoped bean into a singleton bean 
 * Injecting dependencies procedurally
+* @Lookup-annotated methods won't work at all when the surrounding class is @Bean-managed or component scanned.
+### Injecting a prototype-scoped bean into a singleton bean
+* Using @Lookup but limited - uses CGLIB as well
+* Using javax.inject.Provider
+* Using java.util.Function
+* Using ObjectFactory - part of spring framework
 ### @Required
 ### @ComponentScan
 ### Profiles
