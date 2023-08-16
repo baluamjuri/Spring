@@ -18,8 +18,8 @@
   
 ### Read from properties
 * @PropertySource(value="",ignoreResourceNotFound=true, classpath:,Ignoring exceptions, ignoreUnresolvablePlaceholders) 
-* Environment
-* MessageSource, MessageSourceAware
+* Environment - To get the properties from yml/properties/etc
+* MessageSource, MessageSourceAware - Used for I18N support and reads from different sources using ResourceBundleMessageSource
 * Spring Boot @ConfiguarationProperties, with prefix
  	https://www.mkyong.com/spring-boot/spring-boot-configurationproperties-example/
 * @Value
