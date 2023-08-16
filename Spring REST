@@ -20,7 +20,8 @@ Versioning-RESTful-Services---Header-and-Content-Negotiation-Approaches
 @SpringBootApplication(componentScan)
 @ConfiguarationProperties
 @CondionalOnProperty, @CondionalOnBean, @CondionalOnClass, @CondionalOnMissingProperty, @CondionalOnMissingBean, @CondionalOnMissingClass
-
+@ComponentScan(basePackages = { "org.amjuri.paymentservices", "org.amjuri.auth" }, 
+excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, classes = PackageExclusionFilter.class))
 Form Validations:
 ----------------
 @Size, @NotNull, @NotEmpty, @Future, @Past, @Pattern (hibernate validator framework)
