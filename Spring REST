@@ -98,3 +98,23 @@ https://devwithus.com/download-upload-files-with-spring-boot/
               .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
               .body(resource);
   }
+
+Status codes:
+--------------------------------------
+OK(200, "OK") - successful response
+CREATED(201, "Created") - Used when POST request if succesfully created or saved in DB
+ACCEPTED(202, "Accepted") - used when an asynchronous operation is initiated on the server
+NO_CONTENT(204, "No Content") - Used for GET request and there is no data in DB
+PARTIAL_CONTENT(206, "Partial Content")	- Used for GET and pagination mode/file range from to bytes
+BAD_REQUEST(400, "Bad Request") - When validation failed
+UNAUTHORIZED(401, "Unauthorized") - When credentials are wrong
+FORBIDDEN(403, "Forbidden") - When user have no permission for the operation
+NOT_FOUND(404, "Not Found") - Used for GET request and the PK/ID is not existed in DB
+METHOD_NOT_ALLOWED(405, "Method Not Allowed") - If you have written GET request but you are doing POST which is not written 
+	1.Using an Unsupported HTTP Method
+	2.Incorrect URL Mapping
+UNPROCESSABLE_ENTITY(422, "Unprocessable Entity") - similar to 400
+INTERNAL_SERVER_ERROR(500, "Internal Server Error") - There is something unexpected in server 
+BAD_GATEWAY(502, "Bad Gateway") - When the proxy server receives an invalid response or no response at all from the upstream server.
+SERVICE_UNAVAILABLE(503, "Service Unavailable") - When high traffic load or scheduled maintanance
+GATEWAY_TIMEOUT(504, "Gateway Timeout") - The proxy server waits for a response from the upstream server, but the response doesn't arrive within a reasonable time frame
