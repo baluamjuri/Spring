@@ -103,7 +103,11 @@ Follows the below order:
 * Injecting dependencies procedurally
 * @Lookup-annotated methods won't work at all when the surrounding class is @Bean-managed or component scanned.
 ### Injecting a prototype-scoped bean into a singleton bean
-* Using @Lookup but limited - uses CGLIB as well
+* Using @Lookup but limited - uses CGLIB
+* @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE, proxyMode = ScopedProxyMode.TARGET_CLASS) //Uses CGLIB
+public class MyPrototypeBean {
+    // Bean definition
+}
 * Using javax.inject.Provider
 * Using java.util.Function
 * Using ObjectFactory - part of spring framework
