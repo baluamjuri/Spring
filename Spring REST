@@ -20,8 +20,43 @@ Versioning-RESTful-Services---Header-and-Content-Negotiation-Approaches
 @SpringBootApplication(componentScan)
 @ConfiguarationProperties
 @CondionalOnProperty, @CondionalOnBean, @CondionalOnClass, @CondionalOnMissingProperty, @CondionalOnMissingBean, @CondionalOnMissingClass
+
+Excluding package based on property:
+-------------------------------------
+@SpringBootApplication
 @ComponentScan(basePackages = { "org.amjuri.paymentservices", "org.amjuri.auth" }, 
 excludeFilters = @ComponentScan.Filter(type = FilterType.CUSTOM, classes = PackageExclusionFilter.class))
+public class PaymentServicesApp {}
+
+
+
+@Slf4j
+public class PackageExclusionFilter implements TypeFilter, EnvironmentAware{
+	
+	private Environment environment;
+
+	public static final String OFFER_ENABLE_PROPERTY_KEY = "offer.enable"; 
+	
+	@Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+	@Override
+	public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
+		String propertyValue = environment.getProperty(OFFER_ENABLE_PROPERTY_KEY);
+		if(Boolean.TRUE.toString().equalsIgnoreCase(propertyValue))
+			return false;
+		else {
+			String className = metadataReader.getClassMetadata().getClassName();
+			boolean exclude = className.startsWith("org.amjuri.b2b.paymentservices.offer");
+			if(exclude)
+				log.info("Stopped instantiating bean {} as {} is {}", className, OFFER_ENABLE_PROPERTY_KEY, propertyValue);
+			return exclude; 	
+		}
+	}
+}
+
 Form Validations:
 ----------------
 @Size, @NotNull, @NotEmpty, @Future, @Past, @Pattern (hibernate validator framework)
