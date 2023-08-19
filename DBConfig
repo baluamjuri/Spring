@@ -30,7 +30,8 @@ public class MariaDbConfig {
 	public DataSource dataSource() {
 		return DataSourceBuilder.create().build();
 	}
-    	
+
+	//If you need customizations
 	@Bean
 	@ConfigurationProperties(prefix = "spring.jpa")
 	public JpaProperties jpaProperties() {
@@ -54,6 +55,7 @@ public class MariaDbConfig {
 		return new JpaTransactionManager(mariaEntityManagerFactory);
 	}
 
+	//If you want to use jdbctemplate
 	@Bean(name = "namedParameterJdbcTemplate")
 	public NamedParameterJdbcTemplate namedParameterJdbcTemplate(@Qualifier("mariaDataSource") DataSource dataSource) {
 		return new NamedParameterJdbcTemplate(dataSource);
