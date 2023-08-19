@@ -1,8 +1,15 @@
 
 https://www.baeldung.com/spring-cache-tutorial
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
+
 @EnableCaching
-@Cacheable("addresses") - 
-@Cacheable({"addresses", "directory"}) - 
+@Cacheable("addresses") - To insert in the cache
+@Cacheable({"addresses", "directory"}) - multiple names for a cache
+Default key taken care by Spring which is based on the method arguments 
 @CacheEvict(value="addresses", allEntries=true) - additional parameter allEntries in conjunction with the cache to be emptied; this will clear all the entries in the cache addresses and prepare it for new data
 @CachePut(value="addresses")
 The difference between @Cacheable and @CachePut is that @Cacheable will skip running the method, whereas @CachePut will actually run the method and then put its results in the cache.
@@ -12,7 +19,10 @@ The difference between @Cacheable and @CachePut is that @Cacheable will skip run
 we can group multiple caching annotations with @Caching, and use it to implement our own customized caching logic.
 
 @CacheConfig(cacheNames={"addresses"})
-public class CustomerDataService {}
+public class CustomerDataService {
+    @Cacheable
+    public String getAddress(Customer customer) {...}
+}
 
 @CachePut(value="addresses", condition="#customer.name=='Tom'")
 public String getAddress(Customer customer) {...}
