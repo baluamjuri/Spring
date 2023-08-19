@@ -94,6 +94,28 @@ public class EmployeeCRUDTransactionAspect
 @Aspect
 @Order(1)
 public class EmployeeCRUDLoggingAspect 
+============================================
+	
+    public Object injectMDCOnEventsInfo(ProceedingJoinPoint proceedingJoinPoint) throws Exception {
+    	try {
+    		Object[] args = proceedingJoinPoint.getArgs();
+    		Arrays.stream(args).forEach(o -> {
+	            if (o instanceof Info) {
+	                Info info = (Info) o;
+	                MDC.put(Constants.CORRELATION_ID, info.getCorrelationId());	                
+	            }
+	        });
+            return proceedingJoinPoint.proceed();
+        } catch (Exception exception) {
+            throw exception;
+        } catch (Throwable throwable) {
+            throw new Exception(throwable);
+        }
+        finally {
+            MDC.clear();
+        }
+    }
+
 ============================================================================
 Examples:
 1. Matching Method Signature Patterns
