@@ -30,6 +30,13 @@ public String getAddress(Customer customer) {...}
 @CachePut(value="addresses", unless="#result.length()<64")
 public String getAddress(Customer customer) {...}
 
+@Cacheable(value = "sellerEventMappings", keyGenerator = "sellerEventKeyGenerator", unless="#result == null")
+@Bean
+public KeyGenerator sellerEventKeyGenerator() {
+	return (Object target, Method method, Object... params) -> 
+		StringUtils.join(params, "_");
+}
+
 https://docs.spring.io/spring-framework/docs/3.2.x/spring-framework-reference/html/cache.html
 ================================================================================================================================
 package com.amjuri.config;
