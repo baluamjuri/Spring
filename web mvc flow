@@ -1,0 +1,63 @@
+Spring web mvc flow
+=====================
+Start server
+Container recognizes all web apps under webapps folder
+Deploys them in server space
+For each application, container creates servlet context object
+While deploying web app, searches for web.xml(deployment descriptor file) which is under WEB-INF folder
+Loads, parses, read web.xml
+Application level data in web.xml stored in servlet context object
+If any servlet has load-on-startup config under web.xml, then at the time of startup the container search the class file of servlet and loads, instantiates and initializes the servlet(DispatcherServlet)
+If class file not found in WEB-INF/classes folder then it searches under WEB-INF/lib folder where all jar files exist(DispatcherServlet exist under org.spring lib folder)
+Loading(loads bytecode to the memory) - internally calls Class.forName()
+Instantiation (Creates object) - c.newInstance()
+Initializaiton (Calling init(servletConfig) method)
+As part of the initialization of the servlet,
+DispatcherServlet Loads, instantiates, initializes WebApplicationContext object 
+WebApplicationContext search for the <dispatcherservlet logical name>-servlet.xml(spring config file) 
+Then container loads, parse and read xmls file and creates servletConfig object and stores all the servlet related config into servletConfig
+Also various bean objects and framework related components listed below are able to create by the WebApplicationContext  as part of the initialization
+HandlerMapping
+HandlerAdapter
+ViewResolver
+ThemeResolver
+LocaleResolver etc
+Server started up
+
+Client submit the request
+Request comes through protocol
+protocol establishes virtual socket connection
+Socket creates request format which contains two parts 1.Request header 2.Request body
+Protocol carry the request data to the server
+
+Server forwards the request to container
+Container takes the request and understands the path 
+Goes to web.xml
+Based on the url pattern, container identifies the servlet(dispatcherservlet) and forwards the request
+DispatcherServlet identifies all framework components HandlerMapping, HandlerAdapter, ViewResolver etc and keeps them in request scope to make available for Controller, Model and view parts
+DispatcherServlet interact with HandlerMapping to get interceptors and handler/controller objects(By calling getHandler())
+DispatcherServlet get the stack(interceptors, controller) in the form of HandlerExecutionChain object
+DispatcherServlet delegates the request to HandlerAdapter by calling handle()
+Our request will be submitted to all the interceptors one by one (executes preHandle())
+And finally reaches to controller.
+Now DispatcherServlet loads, instantiates, initializes Controller component
+Executes business logic
+Controller component returns ModelAndView object 
+ModelAndView passes through all interceptors stack and also executes postHandle() of interceptors
+ModelAndView reaches to HandlerAdapter
+Then HandlerAdapter to DispatcherServlet
+ModelAndView - Contains response attributes, and the logical name of the view
+DispatcherServlet get the view name and location by calling render() of ViewResolver
+DispatcherServlet submits the request and model to respective View Object
+View component passes the response through the interceptors and reaches to DispatcherServlet
+DispatcherServlet to main server
+Server passes the response throgh protocol with response format(contains header and body parts)
+Protocol carry the response to the client
+Protocol destroys the logical connection between client and server
+Container destroys request and response objects
+
+When we shutdown the server or undeploy the web app, container deinstantiates/destroy DispatcherServlet 
+In order to deinstantiate DispatcherServlet container destroys all the framework components first and servlet config object
+To deinstantiate DispatcherServlet container calls destroy()
+unloading of the DispatcherServlet
+destroys servlet context object as part of the web app
