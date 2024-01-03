@@ -1,0 +1,138 @@
+Apache kafka
+============
+1.configuration in yml
+  kafka:
+    consumer:
+      bootstrap-servers:
+        - c-kafka-qa4.copart.com:9092
+      group-id: ${spring.application.name}-c-qa4
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: latest  #Start from the latest/earlier/none offset where none value throws exception if no offset found
+      enable-auto-commit: false  #Kafka commits automatically after periodic intervals
+      properties:
+        isolation.level: read_committed #reads only committed messages
+        request.timeout.ms: 120000 #How long the consumer/producer should wait for the response from broker 
+        interceptor.classes: io.confluent.connect.replicator.offsets.ConsumerTimestampsInterceptor  #works they are sent by a producer or received by a consumer.
+      topic:
+        names: qa4_lot_serviceorders,qa4_b2b_post_process,qa4_lots,qa4_b2b_releaseissue_resolution,qa4_ycs_vehicle_pickup,qa4_lot_imaging,qa4_lot_title,qa4_service_order_updates
+        backoffInMilliSeconds: 5000
+        retryAttempts: 5
+      default-topic:
+        list: qa4_gbrprddb_VATINVVI,qa4_scs_outbound,qa4_misprddb_ERXDT2XD
+    listener:
+      concurrency: 7 #How many threads run to consume
+      ack-mode: manual #acknowledge manually by calling acknowledge() or nack() 
+      type: batch #listens set of messages per poll
+    producer:
+      acks: all #possible values 0, 1, -1(all). 
+	  #0(doesnot wait for acknowledgement from broker), 1(waits for an acknowledgment from the leader broker), waits for an acknowledgment from the all brokers in the partition
+      bootstrap-servers:
+        - c-kafka-qa4.copart.com:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      #      100KB batch-size
+      batch-size: 102400
+      properties:
+        max.in.flight.requests.per.connection: 1 #(maximum number of unacknowledged (or in-flight) requests that can be sent on a connection before waiting for any acknowledgments from the broker.)
+        enable.idempotence: true #Ensure only one time published
+        linger.ms: 100 #slight delay or "linger time" for a Kafka producer before sending out a batch of messages.
+        retries: 1 # How many times producer can retry once get failed. If retries exceeded then it consider as failed and throw error
+    properties:
+      security.protocol: SASL_SSL #
+      sasl.mechanism: SCRAM-SHA-256
+      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="b2b_app_qa4" password="u3cUmc1kfkg5fCTtAnWZmqkjD6GB0bf2";
+	  
+SSL - Secured socket layer - Cryptographic protocol 
+TSL - Transport socket layer (Upgraded version of SSL)
+HTTP - Hypertext transfer protocol - Network protocol to transfer data
+Https - Http+SSL/TSL - secured Http
+FTP - File Transfer protocol - protocol to transfer files
+SFTP - secured FTP
+
+SASL - Simple Authentication and Security Layer
+SASL authentication mechanisms - PLAIN, SCRAM, GSSAPI,or others
+SCRAM - Salted Challenge Response Authentication Mechanism - It uses a salted hash of the user's password and transmits it securely across the network
+
+
+@Configuration
+@Slf4j
+@EnableKafka
+public class KafkaConfig {
+	@Autowired
+	private KafkaProperties kafkaProperties;
+	
+	//Producer Configuration
+	@Bean
+	public ProducerFactory<String, String> producerFactory() {
+		Map<String, Object> producerConfig = new HashMap<>(kafkaProperties.buildProducerProperties());
+		producerConfig.put(ProducerConfig.CLIENT_ID_CONFIG, Constants.getHostName());
+		log.info("Producer config: {}", producerConfig);
+		return new DefaultKafkaProducerFactory<>(producerConfig);
+	}
+
+	@Bean
+	public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
+		return new KafkaTemplate<>(producerFactory);
+	}
+
+	//ConsumerConfiguration
+	public ConsumerFactory<String, EventInfoMessage> consumerFactory() {
+		Map<String, Object> consumerConfig = new HashMap<>(kafkaProperties.buildConsumerProperties());
+		log.info("Consumer config: {}", consumerConfig);
+		
+		ErrorHandlingDeserializer2<EventInfoMessage> errorHandlingDeserializer
+        = new ErrorHandlingDeserializer2<>(new JsonDeserializer<>(EventInfoMessage.class));
+		
+		return new DefaultKafkaConsumerFactory<>(consumerConfig, 
+				new StringDeserializer(),
+				errorHandlingDeserializer);
+	}
+	
+	@Bean(name = "eventInfoMessageListenerContainerFactory")
+	public ConcurrentKafkaListenerContainerFactory<String, EventInfoMessage> kafkaListenerContainerFactory() {
+		Listener listener = kafkaProperties.getListener();
+		ConcurrentKafkaListenerContainerFactory<String, EventInfoMessage> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		factory.getContainerProperties().setAckMode(listener.getAckMode());
+		factory.setConsumerFactory(consumerFactory());
+		factory.setConcurrency(listener.getConcurrency());
+		factory.setBatchListener(true);
+		return factory;
+	}
+	
+	public ConsumerFactory<String, String> defaultConsumerFactory() {
+		Map<String, Object> consumerConfig = new HashMap<>(kafkaProperties.buildConsumerProperties());
+		return new DefaultKafkaConsumerFactory<>(consumerConfig, new StringDeserializer(), new StringDeserializer());
+	}
+
+	@Bean(name = "defaultKafkaListenerContainerFactory")
+	public ConcurrentKafkaListenerContainerFactory<String, String> defaultKafkaListenerContainerFactory() {
+		Listener listener = kafkaProperties.getListener();
+		ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+		factory.getContainerProperties().setAckMode(listener.getAckMode());
+		factory.setConsumerFactory(defaultConsumerFactory());
+		factory.setConcurrency(listener.getConcurrency());
+		factory.setBatchListener(true);
+		return factory;
+	}
+
+	@Bean
+	public StringSerializer stringSerializer() {
+		return new StringSerializer();
+	}
+	
+	@Bean
+	public StringDeserializer stringDeSerializer() {
+		return new StringDeserializer();
+	}
+	
+	@Bean
+	public AdminClient adminClient() {
+		return AdminClient.create(kafkaProperties.buildProducerProperties());
+	}
+}
+
+
+
+@KafkaListener(topics = { "#{'${spring.kafka.consumer.default-topic.list}'.split(',')}" }, containerFactory = "defaultKafkaListenerContainerFactory")
+public void listen(List<ConsumerRecord<String, String>> consumerRecords, Acknowledgment acknowledgment) {
