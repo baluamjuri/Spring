@@ -8,3 +8,111 @@ Zipkin, sleuth
 Kafka - Message Broker (For internal communication between services)
 Docker - containeraization
 Kubernates - Autoscaling, Maintainance and monitoring of servers
+
+For all Microservices components we need to set 3 things
+1. starter
+2. Enable annotation
+3. Configuration in properties/yml/class file
+
+Cloud config server - central config repository
+================================================
+1. <artifactId>spring-cloud-config-server</artifactId>
+2. @EnableConfigServer
+3. 
+Ex.1
+spring: 
+  application: 
+    name: config-service
+  cloud: 
+    config: 
+      server: 
+        native: 
+          searchLocations: classpath:/configurations-center, classpath:/configurations-center/common            
+  profiles: 
+    active: native
+
+Ex.2
+
+# Configuration for fetching from Git repository
+spring.cloud.config.server.git.uri=https://github.com/yourusername/your-config-repo.git
+spring.cloud.config.server.git.clone-on-start=true
+spring.cloud.config.server.git.default-label=main
+
+client:
+-------
+1. <artifactId>spring-cloud-starter-config</artifactId>
+2. @EnableConfigClient (optional)
+3. 
+spring:
+  cloud: 
+    config:
+      uri: http://localhost:8001
+      name: ${spring.application.name}, eureka-location, resource-server-jwt-key
+	  
+Ex.2:
+spring:
+  cloud:
+#    config:
+#      uri: http://user:${CONFIGSERVER_PASSWORD:amjuri}@${CONFIGSERVER_NAME:c-config-dev4.amjuri.com}
+
+Eureka - service registry
+=========================
+1.<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+2.@EnableEurekaServer
+3.
+eureka:
+  instance:
+    hostname: localhost
+  client:  
+  # Not a client, don't register with yourself (unless running
+  # multiple discovery servers for redundancy)
+    registerWithEureka: false
+    fetchRegistry: false
+
+client:
+-------
+1. <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+2. @EnableDiscoveryClient
+3. 
+eureka: 
+  client: 
+    serviceUrl: 
+      defaultZone: http://localhost:8002/eureka/
+
+
+Zuul - API gateway
+===================
+1. <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+2. @EnableZuulProxy
+3. 
+zuul:
+  prefix: /gateway
+  routes:
+    auth-center:
+      path: /auth/**
+      service-id: auth-center
+      sensitiveHeaders: Cookie,Set-Cookie
+      # stripPrefix: false
+    user-service:
+      path: /userservice/**
+      sensitiveHeaders: Cookie,Set-Cookie
+      service-id: user-service
+	  
+
+Oauth - Authorization server
+=============================
+1. <artifactId>spring-cloud-starter-oauth2</artifactId>
+<artifactId>spring-cloud-starter-security</artifactId>
+2. @EnableAuthorizationServer
+3. 
+extends WebSecurityConfigurerAdapter and override 
+public void configure(AuthenticationManagerBuilder auth)throws Exception
+
+extends AuthorizationServerConfigurerAdapter and override 
+public void configure(AuthorizationServerEndpointsConfigurer endpoints)throws Exception 
+
+client:
+-------
+1.<artifactId>spring-cloud-starter-oauth2</artifactId>
+<artifactId>spring-cloud-starter-security</artifactId>
+2.@EnableResourceServer
