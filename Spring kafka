@@ -1,0 +1,144 @@
+Kafka provides a distributed, fault-tolerant messaging system where producers publish messages to topics, brokers store and serve messages, and consumers subscribe to topics and process messages. The architecture allows for high throughput, low-latency messaging and horizontal scalability.
+
+Topics:
+-------
+Kafka organizes messages into topics, which are similar to categories or feeds.
+Each topic is split into partitions, and each partition is replicated across multiple Kafka brokers for fault tolerance.
+Offsets:
+	Offsets are unique identifiers representing the position of a consumer within a partition.
+	Kafka maintains the offset of the last consumed message for each partition in a consumer group.
+	Consumers commit offsets to Kafka periodically or manually to indicate the last processed message.
+	Offset commit allows consumers to resume reading from the last committed position upon restart, ensuring no message loss or duplication.
+
+Brokers:
+--------
+Kafka brokers are servers within the Kafka cluster responsible for storing and serving messages.
+Each broker hosts one or more partitions of one or more topics.
+Brokers communicate with each other for replication and metadata synchronization.
+
+Kafka Cluster:
+--------------
+A Kafka cluster consists of multiple brokers working together to serve topics and handle message replication.
+Brokers exchange metadata to maintain topic and partition information across the cluster.
+Topics and partitions are distributed across brokers for load balancing and fault tolerance.
+
+Producers:
+----------
+Producers are applications that publish messages to Kafka topics.
+Producers can choose which topic to send messages to and optionally specify a message key for partitioning.
+
+Consumers:
+----------
+Consumers are applications that subscribe to Kafka topics and process messages.
+Consumers read messages from one or more partitions of a topic.
+Kafka consumers are typically grouped into consumer groups for parallel processing.
+
+Flow from Producer to Broker:
+-----------------------------
+Producer sends messages:
+	Producers publish messages to Kafka topics.
+	Messages may include a key and a value.
+Partitioning:
+	Optionally, messages are partitioned based on a key or round-robin.
+	Kafka uses a partitioner to determine which partition within a topic a message should be sent to.
+Sending to Brokers:
+	Producers send messages to the leader broker of the respective partition.
+	Serialization: 
+		Before sending, messages are serialized into bytes using a serializer configured in the producer
+	Batching: 
+		Optionally, messages can be batched together to reduce network overhead using settings like linger.ms
+		linger.ms: 
+			It controls the delay or "linger" time in milliseconds that the producer will wait in order to accumulate more messages into a batch before sending them off to the Kafka broker.
+			The default value is 0
+	Acknowledgment: 
+		Optionally, the producer waits for acknowledgment from the broker, depending on the acks configuration.
+			acks=all, the producer waits for acknowledgment from all ISR (In-Sync Replica) brokers. This means that the message is successfully replicated to all replicas before the acknowledgment is sent back to the producer.
+			acks=1, the producer waits for an acknowledgment from the leader broker only. Once the leader broker receives the message, it acknowledges the producer.
+			acks=0, the producer does not wait for any acknowledgment from the broker. It immediately sends the message to the broker and does not wait for any response.
+		Retries: 
+			If an error occurs or acknowledgment isn't received within the request.timeout.ms, the producer retries sending the message according to the retries configuration
+			reties - The default value is 2147483647 (max integer value)
+				Determines the number of times the producer will retry sending messages in case of transient errors or failures. , indicating that the producer will retry indefinitely until the max.in.flight.requests.per.connection limit is reached.
+				Backoff Strategy: The retry.backoff.ms property controls the delay between retry attempts. Ensure that it is set appropriately to avoid overwhelming the broker with retries.
+			max.in.flight.requests.per.connection - Default Value: The default value is 5.
+				The maximum number of unacknowledged requests allowed per connection
+				When a Kafka producer sends a batch of messages to a broker, it waits for acknowledgments from the broker before sending more messages.
+			enable.idempotence: 
+				ensuring that messages are sent exactly once, even in the presence of network errors, retries, or reordering of messages.
+				Producer Performance: Idempotent producer adds some overhead due to additional bookkeeping and coordination with brokers. While it ensures exactly-once delivery, it may slightly reduce producer throughput compared to non-idempotent producers.
+Broker Side:
+------------
+Reception: 
+	Kafka brokers receive messages from producers and store them in topic partitions.
+Replication: 
+	Messages are replicated to replica brokers for fault tolerance and durability.
+Persistence: 
+	Messages are written to disk for durability using a commit log structure.
+Acknowledgment: 
+	Once messages are persisted and replicated, the leader broker sends acknowledgment (ack) to the producer.
+Rebalancing: 
+	If a new topic or partition is created or if brokers join/leave the cluster, Kafka triggers consumer group rebalancing to ensure that consumers are assigned to partitions.	
+	Offsets are used during consumer group rebalancing to ensure that consumers are assigned partitions in a balanced and coordinated manner.
+	When a consumer joins or leaves a consumer group, Kafka uses offsets to determine the assignment of partitions to consumers
+Offset Management:
+	Brokers use offsets to manage message retention and deletion policies.
+	Kafka brokers retain messages in topics based on the configured retention period or size limit.
+	Messages with offsets older than the retention period are eligible for deletion based on the segment deletion policy.
+Flow from Broker to Consumer:
+------------------------------
+Consumer Subscribes:
+	Consumers subscribe to Kafka topics they are interested in.
+	Each consumer is assigned one or more partitions to read from.
+	Concurrency: 
+		Optionally, multiple consumer instances can run in parallel, each consuming messages from a subset of partitions within a consumer group.
+Fetch Requests:
+	Consumers poll Kafka brokers for messages using fetch requests.
+	Fetch requests specify the topic, partition, and offset from which to fetch messages.
+	When a Kafka consumer polls for messages from Kafka brokers, it sends a request to fetch records from assigned partitions.
+        properties.isolation.level: 
+			read_uncommitted - This means the consumer might see messages that could eventually be rolled back if the transaction fails.
+			read_committed - 
+	Consumer Throughput:
+		max.poll.records: Determines the maximum number of records that Kafka will return to the consumer in response to each poll request.
+		Setting max.poll.records to a higher value can increase throughput by fetching more records in each poll request, especially if message processing is lightweight and fast.However, setting it too high may also increase the time spent processing the batch of records, potentially impacting the consumer's responsiveness.The default value is 500.
+	Poll Frequency:
+		The consumer polls Kafka brokers periodically based on the poll.interval.ms property. The actual frequency of polls depends on factors such as message arrival rate and processing time.
+	listener.type:
+			single -  a single message listener container is created to consume messages from Kafka topics.
+			batch -,a batch message listener container is created to consume messages in batches from Kafka topics.
+	listener.concurrency:
+		Multiple message listener containers are created with the specified concurrency level to consume messages concurrently from Kafka topics.
+	properties.request.timeout.ms:
+		the maximum amount of time the consumer will wait for a response from the broker when polling for messages. If no messages are available within this time frame, the consumer will rejoin the group if it's a part of a consumer group and initiate a new fetch request.
+Message Delivery:
+	Brokers serve messages to consumers based on the requested topic, partition, and offset.
+	Messages are delivered in batches to optimize network efficiency.
+	Deserialization: 
+		Messages are deserialized from bytes to their original format using a deserializer configured in the consumer.
+		Ex:
+			key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+			value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+Processing and Acknowledgment:
+	Consumers process messages and optionally commit offsets to Kafka.
+	Offset Management: 
+		For consumers, offsets are crucial for tracking the progress of message consumption within a partition.
+		The consumer tracks the offset of the last consumed message and commits it periodically or manually, depending on the configuration.
+		Each consumer group maintains its offset for each partition it consumes from.
+	Offset Commit: 
+		The consumer commits the offset to Kafka to indicate that the message has been successfully processed and consumed. Offset commit ensures that messages are not reprocessed upon consumer restart.
+	Auto-Offset Reset: 
+		If the consumer restarts or if the committed offset is invalid, Kafka determines the starting offset based on the auto.offset.reset configuration.
+		auto-offset-reset:
+			This property is used in Spring Kafka to specify what to do when there is no initial offset in Kafka or if the current offset no longer exists on the server
+			"earliest": automatically reset the offset to the earliest offset.
+			"latest": automatically reset the offset to the latest offset.
+			"none": throw an exception if no offset is found for the consumer's group ID.
+	Error Handling: 
+		The consumer handles errors and exceptions during message processing, potentially retrying or logging them.
+	ack-mode:
+		AUTO - default mode, the acknowledgment is automatically handled by the framework once the message listener method returns successfully without throwing any exceptions.
+		MANUAL - the application code is responsible for acknowledging the message explicitly by calling acknowledgment.acknowledge()
+		MANUAL_IMMEDIATE - kafka broker expects the acknowledgement immediately after delivering message. We have to use this regardless of whether the message processing was successful or not. If we don't send acknowledgement till session time out then it may redeliver the message just like 'MANUAL' mode. If a consumer lags behind in processing messages and doesn't acknowledge them, it may fall further behind and potentially encounter consumer rebalancing or session timeouts.
+	enable-auto-commit:
+		enable.auto.commit=true: Offsets are automatically committed by the consumer at regular intervals.
+		enable.auto.commit=false: Offsets are not automatically committed, the application needs to manually commit offsets using Consumer.commitSync() or Consumer.commitAsync().
