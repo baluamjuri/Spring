@@ -41,6 +41,9 @@
 * websocket(5)
 
 ### @Lazy
+* Performance Optimization - creates bean when actually using
+* Memory Optimization - By lazily initializing beans
+* Circular Dependency Resolution
 ### Stereotypes 
 * @Component
 * @Configuration
