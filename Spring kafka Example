@@ -4,8 +4,8 @@ Apache kafka
   kafka:
     consumer:
       bootstrap-servers:
-        - c-kafka-qa4.copart.com:9092
-      group-id: ${spring.application.name}-c-qa4
+        - qa-kafka.amjuri.com:9092
+      group-id: ${spring.application.name}-qa
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       auto-offset-reset: latest  #Start from the latest/earlier/none offset where none value throws exception if no offset found
@@ -15,11 +15,11 @@ Apache kafka
         request.timeout.ms: 120000 #How long the consumer/producer should wait for the response from broker 
         interceptor.classes: io.confluent.connect.replicator.offsets.ConsumerTimestampsInterceptor  #works they are sent by a producer or received by a consumer.
       topic:
-        names: qa4_lot_serviceorders,qa4_b2b_post_process,qa4_lots,qa4_b2b_releaseissue_resolution,qa4_ycs_vehicle_pickup,qa4_lot_imaging,qa4_lot_title,qa4_service_order_updates
+        names: monitoring, payments, items
         backoffInMilliSeconds: 5000
         retryAttempts: 5
       default-topic:
-        list: qa4_gbrprddb_VATINVVI,qa4_scs_outbound,qa4_misprddb_ERXDT2XD
+        list: qa_gbrprddb_VATINVVI,qa_scs_outbound,qa_misprddb_ERXDT2XD
     listener:
       concurrency: 7 #How many threads run to consume
       ack-mode: manual #acknowledge manually by calling acknowledge() or nack() 
@@ -28,7 +28,7 @@ Apache kafka
       acks: all #possible values 0, 1, -1(all). 
 	  #0(doesnot wait for acknowledgement from broker), 1(waits for an acknowledgment from the leader broker), waits for an acknowledgment from the all brokers in the partition
       bootstrap-servers:
-        - c-kafka-qa4.copart.com:9092
+        - qa-kafka.amjuri.com:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       #      100KB batch-size
@@ -41,7 +41,7 @@ Apache kafka
     properties:
       security.protocol: SASL_SSL #
       sasl.mechanism: SCRAM-SHA-256
-      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="b2b_app_qa4" password="u3cUmc1kfkg5fCTtAnWZmqkjD6GB0bf2";
+      sasl.jaas.config: org.apache.kafka.common.security.scram.ScramLoginModule required username="app_qa" password="9@$$w0r6";
 	  
 SSL - Secured socket layer - Cryptographic protocol 
 TSL - Transport socket layer (Upgraded version of SSL)
