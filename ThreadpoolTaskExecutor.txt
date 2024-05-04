@@ -1,0 +1,129 @@
+ThreadPoolTaskExecutor is a class provided by the Spring Framework for managing a thread pool in Java applications. It is often used to execute asynchronous tasks efficiently. Let's break down its core properties:
+
+1. *corePoolSize*:
+   - This property defines the number of threads to keep in the pool, even if they are idle.
+   - These threads are kept alive and ready to execute tasks, so they reduce the overhead of thread creation when tasks arrive.
+   - Tasks submitted to the executor are assigned to these core threads if they are available.
+   - If the number of tasks exceeds the core pool size, new threads may be created up to the maximum pool size.
+
+2. *maxPoolSize*:
+   - This property specifies the maximum number of threads that the pool can have.
+   - If there are more tasks than the core pool size can handle and there are still tasks waiting in the queue, and if the number of threads is less than maxPoolSize, new threads will be created up to maxPoolSize.
+   - Once the maximum pool size is reached, the executor may reject tasks, depending on its rejection policy (e.g., abort, discard, caller-runs, etc.).
+
+3. *queueCapacity*:
+   - This property sets the maximum number of tasks that can be queued if all threads are busy.
+   - When the number of tasks submitted exceeds the sum of core pool size and max pool size, and there are no available threads to immediately execute those tasks, they are placed in a queue.
+   - If the queue is full (i.e., it reaches its capacity), additional tasks may be handled according to the executor's rejection policy.
+
+4. *keepAliveSeconds*:
+   - This property specifies the time duration that excess idle threads (beyond the core pool size) are kept alive before being terminated.
+   - If the number of threads exceeds the core pool size and remains idle for longer than keepAliveSeconds, those threads are terminated until the thread count is reduced to the core pool size.
+
+5. *allowCoreThreadTimeOut*:
+   - This is a boolean property that determines whether core threads should be subject to the keepAliveSeconds timeout.
+   - By default, core threads are not terminated after keepAliveSeconds if this property is set to false. However, if set to true, even core threads can be terminated if they remain idle beyond the timeout period.
+
+These properties collectively define the behavior of a thread pool managed by ThreadPoolTaskExecutor. Properly configuring them is crucial for achieving optimal performance and resource utilization in multi-threaded applications.
+
+Set the maximum number of seconds that this executor is supposed to blockon shutdown in order to wait for remaining tasks to complete their executionbefore the rest of the container continues to shut down. This is particularlyuseful if your remaining tasks are likely to need access to other resourcesthat are also managed by the container. 
+
+----------------------------------------------------------------------------------------
+**waitForJobsToCompleteOnShutdown && 
+Set whether to wait for scheduled tasks to complete on shutdown,not interrupting running tasks and executing all tasks in the queue. 
+
+Default is "false", shutting down immediately through interruptingongoing tasks and clearing the queue. Switch this flag to "true" if youprefer fully completed tasks at the expense of a longer shutdown phase. 
+
+Note that Spring's container shutdown continues while ongoing tasksare being completed. If you want this executor to block and wait for thetermination of tasks before the rest of the container continues to shutdown - e.g. in order to keep up other resources that your tasks may need -,set the "awaitTerminationSeconds"property instead of or in addition to this property.
+
+
+*awaitTerminationSeconds*
+Set the maximum number of seconds that this executor is supposed to blockon shutdown in order to wait for remaining tasks to complete their executionbefore the rest of the container continues to shut down. This is particularly useful if your remaining tasks are likely to need access to other resourcesthat are also managed by the container
+
+By default, this executor won't wait for the termination of tasks at all.It will either shut down immediately, interrupting ongoing tasks and clearing the remaining task queue - or, if the "waitForTasksToCompleteOnShutdown"flag has been set to true, it will continue to fully execute all ongoing tasks as well as all remaining tasks in the queue, in parallel 
+----------------------------------------------------------------------------------------
+*CallerRunsPolicy*
+
+CallerRunsPolicy is one of the rejection policies available for the ThreadPoolTaskExecutor class in Spring Framework. Rejection policies define the behavior of the executor when it cannot accept new tasks due to resource constraints, such as when the queue is full and the maximum pool size has been reached.
+
+Specifically, CallerRunsPolicy is a policy where the thread that attempts to submit a task to the executor will execute the task itself if the executor is unable to accept the task due to saturation of its task queue and maximum pool size.
+
+This policy can be useful in scenarios where it's preferable to have the calling thread handle the task directly rather than rejecting it, especially if the calling thread can afford to execute the task synchronously without causing performance issues or blocking for an extended period.
+
+----------------------------------------------------------------------------------------
+spring:
+  event:
+    thread-pool-task-executor:
+      maxPoolSize: 30
+      corePoolSize: 25
+      queueCapacity: 1000
+      threadNamePrefix: eventsInfoThreadPoolTaskExecutor
+      waitForJobsToCompleteOnShutdown: true
+      awaitTerminationSeconds: 30
+	  
+	  
+@Bean(name="eventsInfoThreadPoolTaskExecutorConfig")
+@ConfigurationProperties(prefix = "spring.event.thread-pool-task-executor")
+public ThreadPoolTaskExecutorConfig eventsInfoThreadPoolTaskExecutorConfig() {
+	return new ThreadPoolTaskExecutorConfig();
+}	  
+
+@Getter
+@Setter
+public static class ThreadPoolTaskExecutorConfig {
+	private Integer maxPoolSize;
+	private Integer corePoolSize;
+	private Integer queueCapacity;
+	private String threadNamePrefix;
+	private Boolean waitForJobsToCompleteOnShutdown;
+	private Integer awaitTerminationSeconds;
+}
+
+private ThreadPoolTaskExecutor getThreadPoolTaskExecutor(
+			ThreadPoolTaskExecutorConfig threadPoolTaskExecutorConfig) {
+	ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+	threadPoolTaskExecutor.setMaxPoolSize(threadPoolTaskExecutorConfig.getMaxPoolSize());
+	threadPoolTaskExecutor.setCorePoolSize(threadPoolTaskExecutorConfig.getCorePoolSize());
+	threadPoolTaskExecutor.setQueueCapacity(threadPoolTaskExecutorConfig.getQueueCapacity());
+	threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+	threadPoolTaskExecutor
+			.setWaitForTasksToCompleteOnShutdown(threadPoolTaskExecutorConfig.getWaitForJobsToCompleteOnShutdown());
+	threadPoolTaskExecutor.setAwaitTerminationSeconds(threadPoolTaskExecutorConfig.getAwaitTerminationSeconds());
+	threadPoolTaskExecutor.setThreadNamePrefix(threadPoolTaskExecutorConfig.getThreadNamePrefix());
+	threadPoolTaskExecutor.setTaskDecorator(ActionUtils.getMDCAwareTaskDecorator());
+	return threadPoolTaskExecutor;
+}
+
+@Bean(name = "eventThreadPoolTaskExecutor")
+public ThreadPoolTaskExecutor actionThreadPoolTaskExecutor(
+		@Qualifier("eventThreadPoolTaskExecutorConfig") ThreadPoolTaskExecutorConfig threadPoolTaskExecutorConfig) {
+	ThreadPoolTaskExecutor threadPoolTaskExecutor = getThreadPoolTaskExecutor(threadPoolTaskExecutorConfig);
+	threadPoolTaskExecutor.initialize();
+	return threadPoolTaskExecutor;
+}
+
+Example:
+========	
+List<CompletableFuture<Void>> completableFutures 
+		= events
+			.stream()
+			.map(event -> CompletableFuture.supplyAsync(event, eventThreadPoolTaskExecutor)
+							.exceptionally(throwable -> {
+								//return result
+							})
+							.thenAccept(result -> {
+								//
+							}))
+			.collect(Collectors.toList());
+
+CompletableFuture<Void> completableFuture = CompletableFuture.allOf(completableFutures.toArray(new CompletableFuture[completableFutures.size()]))
+												.thenAccept(v -> {
+															//do something
+														});
+
+try {
+	completableFuture.get();
+	
+} catch (InterruptedException | ExecutionException e) {
+	//Handle
+}
