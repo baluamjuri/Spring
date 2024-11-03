@@ -1,6 +1,3 @@
-Entity annotations
-HB associations, inheritance
-
 Query by method:
 ====================
 https://docs.spring.io/spring-data/jpa/docs/1.5.0.RELEASE/reference/html/repositories.html#repositories.query-methods
@@ -57,25 +54,84 @@ HibernateException: The general superclass for all Hibernate-specific exceptions
 NonUniqueResultException: Thrown when a query execution returns more than one result where only one result was expected.
 
 QueryException: Thrown when a query is syntactically incorrect or when there is a problem with the query execution.
+### Query by method:
+https://docs.spring.io/spring-data/jpa/docs/1.5.0.RELEASE/reference/html/repositories.html#repositories.query-methods
+https://docs.spring.io/spring-data/jpa/docs/1.5.0.RELEASE/reference/html/jpa.repositories.html#jpa.sample-app.finders.strategies
 
-LazyInitializationException: Thrown when you attempt to access uninitialized lazy-loaded collections or associations outside the session scope.
+```
+T findOne(ID primaryKey);
+Iterable<T> findAll();
+List<User> findByName(String name)
+  List<User> findByNameIs(String name);
+  List<User> findByNameEquals(String name);
+List<User> findByNameIsNot(String name);
+findByNameIsNull, findByNameIsNotNull
+findByLastnameIgnoreCase
+findByActiveTrue
+List<User> findByNameStartingWith(String prefix); List<User> findByNameEndingWith(String suffix); List<User> findByNameContaining(String infix);
+List<User> findByAgeLessThan(Integer age);List<User> findByAgeLessThanEqual(Integer age);List<User> findByAgeGreaterThan(Integer age); List<User> findByAgeGreaterThanEqual(Integer age); List<User> findByAgeBetween(Integer startAge, Integer endAge);
+List<User> findTop3ByAge()
+List<User> findByAgeIn(Collection<Integer> ages);
+List<User> findByBirthDateAfter(ZonedDateTime birthDate);List<User> findByBirthDateBefore(ZonedDateTime birthDate);
+List<User> findByNameOrBirthDateAndActive(String name, ZonedDateTime birthDate, Boolean active);
+List<User> findByNameOrderByNameAsc(String name);List<Person> findByLastnameOrderByFirstnameDesc(String lastname);
+findByFirstnameLike
+findDistinctPeopleByLastnameOrFirstname
+repository.existsById(id)
+List<Person> findByAddress_ZipCode(ZipCode zipCode);(when Address is a instance object of Person and zipcode is Address's property)
+Page<T> findAll(Pageable pageable);
+repository.findAll(new PageRequest(1, 20));
+```
 
-ObjectNotFoundException: Thrown when an object is not found in the database or is no longer available.
+### Query by Example:
+Need to udpate...
 
-PersistentObjectException: Thrown when there is a problem with persistent objects, such as re-associating a transient object with an already associated session.
+### Few annotations of JPA to recall
+```
+@Query
+@Query(value="", nativeQuery= true)
+@Modifying
+@Query("update User u set u.firstname = ?1 where u.lastname = ?2")
+@Converter, AttributeConverter - Automatically converts db column value to your value
+```
+### Ways to Improve JPA Performance
+* Eager fetching
+* Lazy fetching
+* Pagination - q.setMaxResults(5), q.setFirstResult(0)
+* Smart Column select
+* Using DTO projections - 
+```
+ public interface AuthorRepository extends JpaRepository<Author, Long> {
+  
+     List<AuthorValueIntf> findByFirstName(String firstName);
+  
+ }
+```
 
-StaleStateException: As mentioned earlier, this exception is thrown in optimistic locking scenarios when an entity's version is outdated due to concurrent updates.
+### Exception:
+**HibernateException**: The general superclass for all Hibernate-specific exceptions.
 
-TransientObjectException: Thrown when you try to save an object with a null identifier (primary key) or when you attempt to save an already persistent object as transient.
+**NonUniqueResultException**: Thrown when a query execution returns more than one result where only one result was expected.
 
-PropertyValueException: Thrown when there is a problem with the properties of an entity, such as null or invalid values for required properties.
+**QueryException**: Thrown when a query is syntactically incorrect or when there is a problem with the query execution.
 
-ConstraintViolationException: This is a subclass of HibernateException and indicates that a constraint violation occurred when persisting or updating an entity, such as unique constraint violations.
+**LazyInitializationException**: Thrown when you attempt to access uninitialized lazy-loaded collections or associations outside the session scope.
 
-ObjectDeletedException: Thrown when you try to access a deleted object that is no longer available in the session.
+**ObjectNotFoundException**: Thrown when an object is not found in the database or is no longer available.
 
-UnresolvableObjectException: Thrown when there is an attempt to resolve an unknown or unassociated object
+**PersistentObjectException**: Thrown when there is a problem with persistent objects, such as re-associating a transient object with an already associated session.
 
+**StaleStateException**: As mentioned earlier, this exception is thrown in optimistic locking scenarios when an entity's version is outdated due to concurrent updates.
+
+**TransientObjectException**: Thrown when you try to save an object with a null identifier (primary key) or when you attempt to save an already persistent object as transient.
+
+**PropertyValueException**: Thrown when there is a problem with the properties of an entity, such as null or invalid values for required properties.
+
+**ConstraintViolationException**: This is a subclass of HibernateException and indicates that a constraint violation occurred when persisting or updating an entity, such as unique constraint violations.
+
+**ObjectDeletedException**: Thrown when you try to access a deleted object that is no longer available in the session.
+
+**UnresolvableObjectException**: Thrown when there is an attempt to resolve an unknown or unassociated object
 
 ### We can do batch update in different ways:
 
