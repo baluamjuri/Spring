@@ -1,0 +1,47 @@
+The below two Annotations are required 
+@EnableRetry
+@EnableAsync
+
+@Async, @Retryable has two limitations:
+It must be applied to public methods only
+Self-invocation — calling the async method from within the same class — won’t work
+
+
+@Retryable(
+            value = {ResourceAccessException.class, HttpServerErrorException.class},
+            maxAttemptsExpression = "${api.retry.maxAttempts}",
+            backoff = @Backoff(
+                    delayExpression = "${api.retry.backoffDelay}",
+                    multiplierExpression = "${api.retry.backoffMultiplier}"
+            )
+    )
+    @Async("feedAsyncExecutor")
+    public CompletableFuture<FeedResponse> getFeedResponse(int pageNumber, int pageSize) {
+
+        String url = "/yourUrl";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("size", String.valueOf(pageSize));
+        String offset = String.valueOf((pageNumber - 1) * pageSize);
+        body.add("offset", offset);
+
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+        logger.info("Thread {} Fetching pageNumber: {}, pageSize: {}", Thread.currentThread().getName(), pageNumber, pageSize);
+        ResponseEntity<FeedResponse> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, FeedResponse.class);
+        return CompletableFuture.completedFuture(response.getBody());
+    }
+
+    @Recover
+    public CompletableFuture<FeedResponse> recoverGetFeedResponse(HttpServerErrorException ex, int pageNumber, int pageSize) {
+        logger.error(String.format("Exception encountered when fetching feed for page %d", pageNumber), ex);
+        //Send email or pubshish message in dead letter queue or notify with anything
+        return CompletableFuture.completedFuture(ITPPFeedResponse.builder()
+                .data(ITPPFeedResponse.Data.builder()
+                        .locations(Collections.emptyList())
+                        .count(-1)
+                        .build())
+                .build());
+    }
